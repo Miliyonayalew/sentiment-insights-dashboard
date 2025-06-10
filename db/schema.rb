@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_09_195235) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_10_201451) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,27 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_09_195235) do
     t.index ["jti"], name: "index_jwt_denylists_on_jti"
   end
 
+  create_table "mentions", force: :cascade do |t|
+    t.string "title"
+    t.text "content"
+    t.string "sentiment"
+    t.string "source"
+    t.datetime "published_at"
+    t.string "url"
+    t.bigint "tracked_keyword_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tracked_keyword_id"], name: "index_mentions_on_tracked_keyword_id"
+  end
+
+  create_table "tracked_keywords", force: :cascade do |t|
+    t.string "keyword"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_tracked_keywords_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -30,7 +51,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_09_195235) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
+
+  add_foreign_key "mentions", "tracked_keywords"
+  add_foreign_key "tracked_keywords", "users"
 end
