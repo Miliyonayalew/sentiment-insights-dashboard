@@ -1,11 +1,11 @@
- require 'sidekiq/web'
- require 'rack/session/cookie'
+#  require 'sidekiq/web'
+#  require 'rack/session/cookie'
 
-  Sidekiq::Web.use Rack::Session::Cookie, secret: Rails.application.credentials.secret_key_base || 'some_secret_key_base'
+#   Sidekiq::Web.use Rack::Session::Cookie, secret: Rails.application.credentials.secret_key_base || 'some_secret_key_base'
 
-  Sidekiq::Web.use Rack::Auth::Basic do |username, password|
-    username == ENV["ADMIN_USER"] && password == ENV["ADMIN_PASSWORD"]
-  end
+#   Sidekiq::Web.use Rack::Auth::Basic do |username, password|
+#     username == ENV["ADMIN_USER"] && password == ENV["ADMIN_PASSWORD"]
+#   end
 
 Rails.application.routes.draw do
   devise_for :users,
@@ -42,5 +42,5 @@ Rails.application.routes.draw do
     end
   end
 
-  mount Sidekiq::Web => '/sidekiq'
+  # mount Sidekiq::Web => '/sidekiq'
 end
