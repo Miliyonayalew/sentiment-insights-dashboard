@@ -2,13 +2,17 @@ Rails.application.routes.draw do
   devise_for :users,
     controllers: {
       registrations: "users/registrations",
-      sessions: "users/sessions"
+      sessions: "users/sessions",
+      passwords: 'users/passwords',
+      confirmations: 'users/confirmations'
     },
     path: "",
     path_names: {
       sign_in: "login",
       sign_out: "logout",
-      registration: "signup"
+      registration: "signup",
+      password: "reset-password",
+      confirmation: "verify-email"
     }
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -21,7 +25,7 @@ Rails.application.routes.draw do
   #  devise_for :users,
   namespace :api do
     namespace :v1 do
-      resources :tracked_keywords, only: [:index, :create, :destroy]
+      resources :tracked_keywords, only: [ :index, :create, :destroy ]
     end
   end
 end

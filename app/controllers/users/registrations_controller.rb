@@ -2,6 +2,11 @@ class Users::RegistrationsController < Devise::RegistrationsController
     respond_to :json
 
     def create
+        if User.exists?(email: sign_up_params[:email])
+            render json: { message: "User already exists", is_success: false }, status: :conflict
+            return
+        end
+
         user = User.new(sign_up_params)
 
         if user.save

@@ -19,5 +19,5 @@ class Api::V1::TrackedKeywordsController < ApplicationController
 
     def keyword_params
         params.require(:tracked_keyword).permit(:keyword)
-    end    
+    end
 end
