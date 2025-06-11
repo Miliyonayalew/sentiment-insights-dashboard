@@ -15,6 +15,13 @@ class Api::V1::TrackedKeywordsController < ApplicationController
         head :no_content
     end
 
+    # POST /tracked_keywords/:id/fetch_mentions
+    def fetch_mentions
+        keyword = current_user.tracked_keywords.find(params[:id])
+        FetchMentionsJob.perform_later(keyword.id)
+        render json: { message: "Fetching mentions started." }, status: :accepted
+    end
+
     private
 
     def keyword_params
