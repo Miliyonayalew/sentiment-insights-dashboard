@@ -1,2 +1,12 @@
 #!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+
+# Check if foreman is available
+if system('which foreman > /dev/null 2>&1')
+  # Use foreman to run both web server and sidekiq
+  exec "foreman", "start", "-f", "Procfile.dev"
+else
+  puts "Foreman not found. Install it with: gem install foreman"
+  puts "Or manually start sidekiq with: bundle exec sidekiq"
+  puts "Starting Rails server only..."
+  exec "./bin/rails", "server", *ARGV
+end

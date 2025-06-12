@@ -1,0 +1,97 @@
+#!/bin/bash
+
+# Enhanced development startup script
+# This script will automatically start both Rails and Sidekiq
+
+set -e
+
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_DIR"
+
+echo "🚀 Starting Social Media Sentiment Dashboard"
+echo "Project directory: $PROJECT_DIR"
+
+# Function to check if a service is running
+check_service() {
+    local service_name=$1
+    local process_pattern=$2
+    
+    if pgrep -f "$process_pattern" > /dev/null; then
+        echo "✅ $service_name is already running"
+        return 0
+    else
+        echo "❌ $service_name is not running"
+        return 1
+    fi
+}
+
+# Function to start sidekiq
+start_sidekiq() {
+    if ! check_service "Sidekiq" "sidekiq"; then
+        echo "🔄 Starting Sidekiq..."
+        bundle exec sidekiq -d -L log/sidekiq.log -P tmp/pids/sidekiq.pid
+        sleep 3
+        if check_service "Sidekiq" "sidekiq"; then
+            echo "✅ Sidekiq started successfully"
+        else
+            echo "❌ Failed to start Sidekiq"
+            exit 1
+        fi
+    fi
+}
+
+# Function to start rails server
+start_rails() {
+    echo "🔄 Starting Rails server..."
+    ./bin/rails server "$@"
+}
+
+# Function to cleanup on exit
+cleanup() {
+    echo ""
+    echo "🛑 Stopping services..."
+    
+    # Stop sidekiq if we started it
+    if [ -f tmp/pids/sidekiq.pid ]; then
+        echo "Stopping Sidekiq..."
+        kill -TERM $(cat tmp/pids/sidekiq.pid) 2>/dev/null || true
+        rm -f tmp/pids/sidekiq.pid
+    fi
+    
+    # Stop rails server
+    if [ -f tmp/pids/server.pid ]; then
+        echo "Stopping Rails server..."
+        kill -TERM $(cat tmp/pids/server.pid) 2>/dev/null || true
+        rm -f tmp/pids/server.pid
+    fi
+    
+    echo "👋 Goodbye!"
+}
+
+# Set up trap to cleanup on exit
+trap cleanup EXIT INT TERM
+
+# Check if Redis is running
+if ! pgrep redis-server > /dev/null; then
+    echo "⚠️  Redis is not running. Please start Redis first:"
+    echo "   sudo systemctl start redis"
+    echo "   or"
+    echo "   redis-server"
+    exit 1
+fi
+
+echo "✅ Redis is running"
+
+# Check if we should use foreman or manual startup
+if command -v foreman >/dev/null 2>&1 && [ -f "Procfile.dev" ]; then
+    echo "🔄 Using Foreman to manage processes..."
+    exec foreman start -f Procfile.dev
+else
+    echo "🔄 Using manual process management..."
+    
+    # Start Sidekiq in background
+    start_sidekiq
+    
+    # Start Rails server in foreground
+    start_rails "$@"
+fi

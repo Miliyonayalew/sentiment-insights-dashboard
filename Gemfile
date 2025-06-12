@@ -45,6 +45,9 @@ gem 'dotenv-rails'
 
 gem 'httparty'
 
+# Sentiment analysis
+gem 'vader_sentiment_ruby'
+
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
@@ -63,4 +66,7 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 
   gem 'letter_opener'
+  
+  # Process manager for running multiple processes in development
+  gem 'foreman'
 end

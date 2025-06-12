@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Script to automatically start Sidekiq if it's not running
+# and then start the Rails server
+
+start_sidekiq_if_not_running() {
+    # Check if sidekiq is already running
+    if pgrep -f "sidekiq" > /dev/null; then
+        echo "✓ Sidekiq is already running"
+    else
+        echo "Starting Sidekiq in background..."
+        bundle exec sidekiq -d -L log/sidekiq.log -P tmp/pids/sidekiq.pid
+        sleep 2
+        if pgrep -f "sidekiq" > /dev/null; then
+            echo "✓ Sidekiq started successfully"
+        else
+            echo "✗ Failed to start Sidekiq"
+        fi
+    fi
+}
+
+# Function to cleanup on exit
+cleanup() {
+    echo "Stopping processes..."
+    if [ -f tmp/pids/sidekiq.pid ]; then
+        kill -TERM $(cat tmp/pids/sidekiq.pid) 2>/dev/null || true
+        rm -f tmp/pids/sidekiq.pid
+    fi
+}
+
+# Set up trap to cleanup on exit
+trap cleanup EXIT INT TERM
+
+# Start Sidekiq if not running
+start_sidekiq_if_not_running
+
+# Start Rails server
+echo "Starting Rails server..."
+./bin/rails server "$@"

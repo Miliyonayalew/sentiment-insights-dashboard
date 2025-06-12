@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Service Status Monitor
+# This script checks the status of all required services
+
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_DIR"
+
+echo "🔍 Service Status Monitor"
+echo "========================"
+
+# Check Redis
+if pgrep redis-server > /dev/null 2>&1; then
+    echo "✅ Redis: Running"
+else
+    echo "❌ Redis: Not running"
+fi
+
+# Check Sidekiq
+if pgrep -f sidekiq > /dev/null 2>&1; then
+    SIDEKIQ_PID=$(pgrep -f sidekiq)
+    echo "✅ Sidekiq: Running (PID: $SIDEKIQ_PID)"
+    # Show Sidekiq stats if available
+    if [ -f tmp/pids/sidekiq.pid ]; then
+        echo "   📄 PID file: tmp/pids/sidekiq.pid"
+    fi
+    if [ -f log/sidekiq.log ]; then
+        echo "   📋 Log file: log/sidekiq.log"
+        echo "   📊 Last 3 log entries:"
+        tail -n 3 log/sidekiq.log 2>/dev/null | sed 's/^/      /' || echo "      (log file empty or not accessible)"
+    fi
+else
+    echo "❌ Sidekiq: Not running"
+fi
+
+# Check Rails Server
+if pgrep -f 'rails server' > /dev/null 2>&1; then
+    RAILS_PID=$(pgrep -f 'rails server')
+    echo "✅ Rails Server: Running (PID: $RAILS_PID)"
+    if [ -f tmp/pids/server.pid ]; then
+        echo "   📄 PID file: tmp/pids/server.pid"
+    fi
+else
+    echo "❌ Rails Server: Not running"
+fi
+
+echo ""
+echo "🌐 Service URLs:"
+echo "   Rails App: http://localhost:3000"
+echo "   Sidekiq Web UI: http://localhost:3000/sidekiq"
+echo "   Health Check: http://localhost:3000/api/v1/health/system"
+
+echo ""
+echo "📝 Quick Commands:"
+echo "   Start all services: ./bin/dev-auto"
+echo "   Use foreman: ./bin/dev"
+echo "   Manual sidekiq: bundle exec sidekiq"
+echo "   Check status: ./bin/status"

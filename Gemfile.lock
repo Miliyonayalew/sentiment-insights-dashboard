@@ -124,6 +124,7 @@ GEM
     erubi (1.13.1)
     et-orbi (1.2.11)
       tzinfo
+    foreman (0.88.1)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
@@ -350,6 +351,7 @@ GEM
     unicode-emoji (4.0.4)
     uri (1.0.3)
     useragent (0.16.11)
+    vader_sentiment_ruby (0.1.1)
     warden (1.2.9)
       rack (>= 2.0.9)
     warden-jwt_auth (0.11.0)
@@ -380,6 +382,7 @@ DEPENDENCIES
   devise
   devise-jwt
   dotenv-rails
+  foreman
   httparty
   kamal
   letter_opener
@@ -395,6 +398,7 @@ DEPENDENCIES
   solid_queue
   thruster
   tzinfo-data
+  vader_sentiment_ruby
 
 BUNDLED WITH
    2.6.9

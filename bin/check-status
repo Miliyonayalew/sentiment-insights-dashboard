@@ -1,0 +1,32 @@
+#!/bin/bash
+set -e
+
+echo "🔍 Service Status Monitor"
+echo "========================"
+
+# Check Redis
+if pgrep redis-server >/dev/null 2>&1; then
+    echo "✅ Redis: Running"
+else
+    echo "❌ Redis: Not running"
+fi
+
+# Check Sidekiq
+if pgrep -f "sidekiq" >/dev/null 2>&1; then
+    echo "✅ Sidekiq: Running"
+else
+    echo "❌ Sidekiq: Not running"
+fi
+
+# Check Rails Server
+if pgrep -f "rails server" >/dev/null 2>&1; then
+    echo "✅ Rails Server: Running"
+else
+    echo "❌ Rails Server: Not running"
+fi
+
+echo ""
+echo "📝 Quick Commands:"
+echo "   Start all: ./bin/dev-auto"
+echo "   With foreman: ./bin/dev"
+echo "   Manual sidekiq: bundle exec sidekiq"
