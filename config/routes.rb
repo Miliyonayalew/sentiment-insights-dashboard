@@ -40,7 +40,7 @@ Rails.application.routes.draw do
       # Health check endpoints
       get 'health/sidekiq', to: 'health#sidekiq_status'
       get 'health/system', to: 'health#system_status'
-      
+
       resources :tracked_keywords, only: [ :index, :create, :destroy ] do
         member do
           post :fetch_mentions

@@ -18,7 +18,7 @@ class Api::V1::TrackedKeywordsController < ApplicationController
     # POST /tracked_keywords/:id/fetch_mentions
     def fetch_mentions
         keyword = current_user.tracked_keywords.find(params[:id])
-        
+
         # Check if Sidekiq is available
         begin
           Sidekiq::Stats.new
@@ -29,12 +29,12 @@ class Api::V1::TrackedKeywordsController < ApplicationController
             sidekiq_error: e.message
           }, status: 503
         end
-        
+
         # Get page_size from params, default to 20 if not provided
         page_size = params[:page_size]&.to_i || 20
         # Ensure page_size is within reasonable limits (1-100)
-        page_size = [[page_size, 1].max, 100].min
-        
+        page_size = [ [ page_size, 1 ].max, 100 ].min
+
         # Queue the job with page_size parameter
         job = FetchMentionsJob.perform_later(keyword.id, page_size)
 

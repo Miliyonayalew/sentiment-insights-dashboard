@@ -10,12 +10,12 @@ class FetchMentionsJob < ApplicationJob
 
     new_mentions = []
     articles.each do |article|
-      next if keyword.mentions.exists?(url: article['url']) # avoid duplicates
+      next if keyword.mentions.exists?(url: article["url"]) # avoid duplicates
 
       # Check if keyword appears in title or description (case-insensitive)
       search_term = keyword.keyword.downcase
-      title = article['title']&.downcase || ''
-      description = article['description']&.downcase || ''
+      title = article["title"]&.downcase || ""
+      description = article["description"]&.downcase || ""
 
       # Skip if keyword is not in title or description
       unless title.include?(search_term) || description.include?(search_term)
@@ -28,22 +28,28 @@ class FetchMentionsJob < ApplicationJob
 
       # Use the correct VaderSentimentRuby syntax
       sentiment_scores = VaderSentimentRuby.polarity_scores(combined_text)
-      # Log sentiment scores
       Rails.logger.info "Sentiment scores for '#{article['title']}': #{sentiment_scores.inspect}"
 
-      sentiment = sentiment_scores['compound'] || 0
+      sentiment = sentiment_scores[:compound]
+      Rails.logger.info "Raw compound sentiment: #{sentiment} (#{sentiment.class})"
+      sentiment = sentiment.to_f
 
-      # Use more relaxed thresholds for better sentiment classification
-      # Standard thresholds: 0.05 positive, -0.05 negative are too narrow
-      # New thresholds: 0.03 positive, -0.03 negative provide better sensitivity
-      sentiment_label = sentiment > 0.03 ? 'positive' : sentiment < -0.03 ? 'negative' : 'neutral'
+      sentiment_label = if sentiment < -0.05
+                          "negative"
+      elsif sentiment > 0.05
+                          "positive"
+      else
+                          "neutral"
+      end
+      Rails.logger.info "Classified as '#{sentiment_label}' (compound: #{sentiment})"
+
 
       mention = keyword.mentions.create!(
-        title: article['title'],
-        content: article['description'],
-        url: article['url'],
-        source: article['source']['name'],
-        published_at: article['publishedAt'],
+        title: article["title"],
+        content: article["description"],
+        url: article["url"],
+        source: article["source"]["name"],
+        published_at: article["publishedAt"],
         sentiment: sentiment_label
       )
 
@@ -54,7 +60,7 @@ class FetchMentionsJob < ApplicationJob
     ActionCable.server.broadcast(
       "mentions:#{user.id}",
       {
-        type: 'mentions_fetched',
+        type: "mentions_fetched",
         keyword_id: keyword.id,
         keyword: keyword.keyword,
         new_mentions_count: new_mentions.count,
@@ -83,7 +89,7 @@ class FetchMentionsJob < ApplicationJob
       ActionCable.server.broadcast(
         "mentions:#{user.id}",
         {
-          type: 'fetch_error',
+          type: "fetch_error",
           keyword_id: tracked_keyword_id,
           error: e.message
         }

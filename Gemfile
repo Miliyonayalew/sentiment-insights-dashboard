@@ -66,7 +66,7 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 
   gem 'letter_opener'
-  
+
   # Process manager for running multiple processes in development
   gem 'foreman'
 end
